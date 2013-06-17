@@ -1,6 +1,6 @@
 express = require 'express'
 redis = require 'redis'
-crypto = require('crypto');
+crypto = require 'crypto'
 
 app = express()
 
@@ -14,27 +14,42 @@ else
 
 app.configure ->
   app.set 'port', process.env.PORT or 4000
+  app.use express.compress()
   app.use express.bodyParser()
   app.use express.methodOverride()
   app.use express.cookieParser()
-
 
 # key = The key by which to index the dictionary
 Array::toDict = (key) ->
   @reduce ((dict, obj) -> dict[ obj[key] ] = obj if obj[key]?; return dict), {}
 
+app.delete '/lucky', (req, res) ->
+	redis.del 'lucky'
+	res.send 'Deleted'
 
 app.get '/lucky', (req, res) ->
+	# Async populate next random q
 	redis.get 'hashes', (status, hashes) ->
-		hashes = JSON.parse hashes
-		rand = Math.floor(Math.random() * hashes.length)
-		key = hashes[rand]
-		redis.get key, (status, data) ->
-			res.send(data)
+		if not hashes
+			console.log 'Oops, cant seem to find hash. Did you fetch_gdata first?'
+		else
+			hashes = JSON.parse hashes
+			rand = Math.floor(Math.random() * hashes.length)
+			key = hashes[rand]
+			redis.get key, (status, data) ->
+				data = JSON.parse data
+				options = (x.split(':')[1].trim() for x in data.a.split(','))
+				answer = options.pop()
+				output = {"Q": data.q, "O": options, "A": answer}
+				redis.set 'lucky', JSON.stringify(output)
+	# Meanwhile return current random q
+	redis.get 'lucky', (status, lucky) ->
+		if lucky then res.jsonp JSON.parse(lucky) else res.send 404
+			
 
 app.get '/all', (req, res) ->
 	redis.get 'data', (status, data) ->
-		res.send(data)
+		res.send data
 
 
 # App Routes
@@ -63,8 +78,8 @@ app.get '/fetch_gdata', (_req, _res) ->
 	  	dataDict = data.toDict('hash')
 	  	redis.set 'data', data, (status) ->
 	  		console.log "  updated #{f} (#{data.length} bytes) with status " + status
-	  		_res.send data
 	).end()
+	_res.send 'Database update from Google Spreadsheet has been initiated.'
 
 
 app.listen app.get('port'), () ->
