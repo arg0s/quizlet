@@ -1,0 +1,21 @@
+{
+  "name": "Quizlet-Coffee",
+  "version": "0.0.1",
+  "author": "arg0s",
+  "description": "RESTful API for fetching random multiple choice quiz questions from a google spreadsheet.",
+  "scripts": {
+      "start": "coffee app.coffee"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "coffee-script": "latest",
+    "express": "latest", 
+    "connect-redis": ">= 0.0.1",
+    "crypto": "latest", 
+    "redis": ">= 0.0.1"  
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}
