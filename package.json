@@ -9,10 +9,10 @@
   "license": "MIT",
   "dependencies": {
     "coffee-script": "latest",
-    "express": "latest", 
+    "express": "3.0", 
     "connect-redis": ">= 0.0.1",
-    "crypto": "latest", 
-    "redis": ">= 0.0.1"  
+    "crypto": "latest",
+    "redis": ">= 0.0.1"
   },
   "engines": {
     "node": "0.8.x",
